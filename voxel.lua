@@ -1,29 +1,27 @@
--- mods/australia/voxel.lua
-
--- This is only used to handle cases the decoration manager can't, such as 
+-- This is only used to handle cases the decoration manager can't, such as
 -- more ore in specific biomes.
 
 -- Define perlin noises used in this mapgen by default
-aus.noises = {}
+australia.noises = {}
 
 -- Noise 22 : Cave blend							2D
-aus.noises[22] = {offset = 0.0, scale = 0.1, spread = {x = 8, y = 8, z = 8}, seed = 4023, octaves = 2, persist = 1.0, lacunarity = 2.0}
+australia.noises[22] = {offset = 0.0, scale = 0.1, spread = {x = 8, y = 8, z = 8}, seed = 4023, octaves = 2, persist = 1.0, lacunarity = 2.0}
 
 -- Noise 23 : Cave noise							2D
-aus.noises[23] = {offset = 0.0, scale = 1.0, spread = {x = 400, y = 400, z = 400}, seed = 903, octaves = 3, persist = 0.5, lacunarity = 2.0}
+australia.noises[23] = {offset = 0.0, scale = 1.0, spread = {x = 400, y = 400, z = 400}, seed = 903, octaves = 3, persist = 0.5, lacunarity = 2.0}
 
 -- function to get noisemaps
-function aus.noisemap(i, minp, chulens)
-	local obj = minetest.get_perlin_map(aus.noises[i], chulens)
+function australia.noisemap(i, minp, chulens)
+	local obj = minetest.get_perlin_map(australia.noises[i], chulens)
 	if minp.z then
-		return obj:get3dMap_flat(minp)
+		return obj:get_3d_map_flat(minp)
 	else
-		return obj:get2dMap_flat(minp)
+		return obj:get_2d_map_flat(minp)
 	end
 end
 
 -- useful function to convert a 3D pos to 2D
-function pos2d(pos)
+local function pos_2d(pos)
 	if type(pos) == "number" then
 		return {x = pos, y = pos}
 	elseif pos.z then
@@ -60,26 +58,23 @@ local nodes = {
 	{"copper", "default:stone_with_copper"},
 	{"diamond", "default:stone_with_diamond"},
 	{"gold", "default:stone_with_gold"},
-	{"iron", "default:stone_with_iron"},
-
+	{"iron", "default:stone_with_iron"}
 }
 
-for _, i in pairs(nodes) do
-	node[i[1]] = minetest.get_content_id(i[2])
+for _, v in ipairs(nodes) do
+	node[v[1]] = minetest.get_content_id(v[2])
 end
 
 -- Create a table of biome ids, so I can use the biomemap.
-if not aus.biome_ids then
-	aus.biome_ids = {}
+if not australia.biome_ids then
+	australia.biome_ids = {}
 	for name, desc in pairs(minetest.registered_biomes) do
-		local i = minetest.get_biome_id(desc.name)
-		aus.biome_ids[i] = desc.name
+		australia.biome_ids[minetest.get_biome_id(desc.name)] = desc.name
 	end
 end
 
 -- the mapgen function
-function aus.generate(minp, maxp, seed)
-
+function australia.generate(minp, maxp, seed)
 	-- minp and maxp strings, used by logs
 	local minps, maxps = minetest.pos_to_string(minp), minetest.pos_to_string(maxp)
 
@@ -98,17 +93,17 @@ function aus.generate(minp, maxp, seed)
 	local zstride = area.zstride
 
 	local chulens = vector.add(vector.subtract(maxp, minp), 1) -- Size of the generated area, used by noisemaps
-	local minp2d = pos2d(minp)
+	local minp_2d = pos_2d(minp)
 
 	-- The biomemap is a table of biome index numbers for each horizontal
-	--  location. It's created in the mapgen, and is right most of the time.
-	--  It's off in about 1% of cases, for various reasons.
+	-- location. It's created in the mapgen, and is right most of the time.
+	-- It's off in about 1% of cases, for various reasons.
 	-- Bear in mind that biomes can change from one voxel to the next.
 	local biomemap = minetest.get_mapgen_object("biomemap")
 
 	-- Calculate the noise values
-	local n22 = aus.noisemap(22, minp2d, chulens)
-	local n23 = aus.noisemap(23, minp2d, chulens)
+	local n22 = australia.noisemap(22, minp_2d, chulens)
+	local n23 = australia.noisemap(23, minp_2d, chulens)
 
 	local node_match_cache = {}
 
@@ -138,24 +133,25 @@ function aus.generate(minp, maxp, seed)
 					if data[index_3d_above] == node["river_water_source"] or data[index_3d_above] == node["muddy_river_water_source"] or data[index_3d_above] == node["water_source"] then
 						-- Check to make sure that a plant root is fully surrounded.
 						-- This is due to the kludgy way you have to make water plants
-						--  in minetest, to avoid bubbles.
-						for x1 = -1,1,2 do
-							local n = data[index_3d+x1] 
+						-- in minetest, to avoid bubbles.
+						for x1 = -1, 1, 2 do
+							local n = data[index_3d + x1]
 							if n == node["river_water_source"] or n == node["muddy_river_water_source"] or n == node["water_source"] or n == node["air"] then
 								surround = false
 							end
 						end
-						for z1 = -zstride,zstride,2*zstride do
-							local n = data[index_3d+z1] 
+						for z1 = -zstride, zstride, 2 * zstride do
+							local n = data[index_3d + z1]
 							if n == node["river_water_source"] or n == node["muddy_river_water_source"] or n == node["water_source"] or n == node["air"] then
 								surround = false
 							end
 						end
 					end
+				end
 
 				-- Extra resources in ground per biome.
 				if y < ground and (data[index_3d] == node["air"] or data[index_3d] == node["river_water_source"] or data[index_3d] == node["muddy_river_water_source"] or data[index_3d] == node["water_source"]) then
-					local biome = aus.biome_ids[biomemap[index_2d]]
+					local biome = australia.biome_ids[biomemap[index_2d]]
 					local stone_type = node["stone"]
 					local stone_depth = 1
 					local n23_val = n23[index_2d] + n22[index_2d]
@@ -205,7 +201,7 @@ function aus.generate(minp, maxp, seed)
 	end
 
 	-- Deal with memory issues. This, of course, is supposed to be automatic.
-	local mem = math.floor(collectgarbage("count")/1024)
+	local mem = math.floor(collectgarbage("count") / 1024)
 	if mem > 500 then
 		print("MOD: Australia is manually collecting garbage as memory use has exceeded 500K.")
 		collectgarbage("collect")
@@ -213,5 +209,5 @@ function aus.generate(minp, maxp, seed)
 end
 
 
--- Call the mapgen function aus.generate on mapgen.
-minetest.register_on_generated(aus.generate)
+-- Call the mapgen function australia.generate on mapgen.
+minetest.register_on_generated(australia.generate)

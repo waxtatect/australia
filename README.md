@@ -1,5 +1,5 @@
 # Australia
-A mod for Minetest 0.4.14. Work in progress.
+A mod for Minetest 5. Work in progress.
 Created by vlapsley.
 
 ![Screenshot](https://raw.githubusercontent.com/vlapsley/australia/master/screenshot.png)

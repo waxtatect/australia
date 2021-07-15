@@ -1,5 +1,3 @@
--- mods/australia/biome_timor_sea.lua
-
 minetest.register_biome({
 	name = "timor_sea",
 	--node_dust = "",
@@ -15,10 +13,12 @@ minetest.register_biome({
 	y_min = -64,
 	y_max = 3,
 	heat_point = 80,
-	humidity_point = 90,
+	humidity_point = 90
 })
 
 
+
+local settings = australia.settings
 
 --
 -- Register ores
@@ -27,17 +27,19 @@ minetest.register_biome({
 -- All mapgens except singlenode
 -- Blob ore first to avoid other ores inside blobs
 
-minetest.register_ore({
-	ore_type       = "scatter",
-	ore            = "australia:submarine",
-	wherein        = "default:sand",
-	clust_scarcity = 80*80*80,
-	clust_num_ores = 1,
-	clust_size     = 12,
-	biomes         = {"timor_sea"},
-	y_min     = -64,
-	y_max     = -8,
-})
+if settings.extra then
+	minetest.register_ore({
+		ore_type		= "scatter",
+		ore				= "australia:submarine",
+		wherein			= "default:sand",
+		clust_scarcity	= 80 * 80 * 80,
+		clust_num_ores	= 1,
+		clust_size		= 12,
+		biomes			= {"timor_sea"},
+		y_min			= -64,
+		y_max			= -8
+	})
+end
 
 
 
@@ -45,32 +47,34 @@ minetest.register_ore({
 -- Decorations
 --
 
-local function register_grass_decoration(offset, scale, length)
-	minetest.register_decoration({
-		deco_type = "simple",
-		place_on = {"default:sand"},
-		sidelen = 16,
-		noise_params = {
-			offset = offset,
-			scale = scale,
-			spread = {x = 200, y = 200, z = 200},
-			seed = 329,
-			octaves = 3,
-			persist = 0.6
-		},
-		biomes = {"timor_sea"},
-		y_min = 3,
-		y_max = 3,
-		decoration = "default:grass_"..length,
-	})
-end
+if settings.decorations then
+	local function register_grass_decoration(offset, scale, length)
+		minetest.register_decoration({
+			deco_type = "simple",
+			place_on = {"default:sand"},
+			sidelen = 16,
+			noise_params = {
+				offset = offset,
+				scale = scale,
+				spread = {x = 200, y = 200, z = 200},
+				seed = 329,
+				octaves = 3,
+				persist = 0.6
+			},
+			biomes = {"timor_sea"},
+			y_min = 3,
+			y_max = 3,
+			decoration = "default:grass_" .. length
+		})
+	end
 
-	-- Grasses
-register_grass_decoration(-0.03,  0.09,  5)
-register_grass_decoration(-0.015, 0.075, 4)
-register_grass_decoration(0,      0.06,  3)
-register_grass_decoration(0.015,  0.045, 2)
-register_grass_decoration(0.03,   0.03,  1)
+		-- Grasses
+	register_grass_decoration(-0.03,  0.09,	 5)
+	register_grass_decoration(-0.015, 0.075, 4)
+	register_grass_decoration( 0,	  0.06,	 3)
+	register_grass_decoration( 0.015, 0.045, 2)
+	register_grass_decoration( 0.03,  0.03,	 1)
+end
 
 	-- Narrowleaf Seagrass
 minetest.register_decoration({
@@ -79,10 +83,10 @@ minetest.register_decoration({
 	sidelen = 80,
 	fill_ratio = 0.02,
 	biomes = {"timor_sea"},
-	y_min     = -10,
-	y_max     = -2,
+	y_min = -10,
+	y_max = -2,
 	decoration = "australia:sea_grass",
-	flags = "force_placement",
+	flags = "force_placement"
 })
 
 
@@ -90,6 +94,10 @@ minetest.register_decoration({
 --
 -- ABM'S
 --
+
+if not settings.extra then
+	return
+end
 
 local function place_submarine(pos)
 	minetest.add_node(pos, {name = "default:dirt"})
@@ -111,7 +119,7 @@ local function place_submarine(pos)
 	end
 
 	pos.z = pos.z + 1
-	pos.x = pos.x +1
+	pos.x = pos.x + 1
 
 	for a = 1, 27 do
 		pos.x = pos.x + 1
@@ -640,22 +648,19 @@ local function place_submarine(pos)
 	end
 
 	pos.y = pos.y - 7
-	pos.x = pos.x +16
-	pos.z = pos.z +3
+	pos.x = pos.x + 16
+	pos.z = pos.z + 3
 	minetest.add_node(pos, {name = "australia:submarinechest"})
 end
 
 minetest.register_abm({
+	label = "[australia][timor_sea] add submarine",
 	nodenames = {"australia:submarine"},
 	interval = 1,
 	chance = 1,
 	action = function(pos, node)
-		local yp = {x = pos.x, y = pos.y + 8, z = pos.z}
-		if node.name == "australia:submarine"
-		and (
-			minetest.get_node(yp).name == "default:water_source"
-			or minetest.get_node(yp).name == "australia:water_source"
-		) then
+		local nodename = minetest.get_node({x = pos.x, y = pos.y + 8, z = pos.z}).name
+		if nodename == "default:water_source" or nodename == "australia:water_source" then
 			place_submarine(pos)
 		end
 	end

@@ -1,5 +1,3 @@
--- mods/australia/biome_underground.lua
-
 minetest.register_biome({
 	name = "underground",
 	--node_dust = "",
@@ -15,7 +13,7 @@ minetest.register_biome({
 	y_min = -31000,
 	y_max = -65,
 	heat_point = 50,
-	humidity_point = 50,
+	humidity_point = 50
 })
 
 
@@ -29,28 +27,21 @@ minetest.register_biome({
 
 	-- Bluestone (Basalt)
 minetest.register_ore({
-	ore_type        = "blob",
-	ore             = "australia:bluestone",
-	wherein         = {"default:stone"},
-	clust_scarcity  = 16 * 16 * 16,
-	clust_size      = 8,
-	biomes          = {"underground"},
-	y_min           = -31000,
-	y_max           = -65,
+	ore_type		= "blob",
+	ore				= "australia:bluestone",
+	wherein			= {"default:stone"},
+	clust_scarcity	= 16 * 16 * 16,
+	clust_size		= 8,
+	biomes			= {"underground"},
+	y_min			= -31000,
+	y_max			= -65,
 	noise_threshold = 0.0,
-	noise_params    = {
+	noise_params	= {
 		offset = 0.5,
 		scale = 0.2,
 		spread = {x = 5, y = 5, z = 5},
 		seed = 677,
 		octaves = 1,
 		persist = 0.0
-	},
+	}
 })
-
-
-
---
--- Decorations
---
-

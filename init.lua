@@ -1,60 +1,88 @@
--- mods/australia/init.lua
-
 -- MOD: australia
 -- See README.md for licensing and other information.
 -- Designed for valleys mapgen in Minetest 0.4.14, but will work with mgv5,
 -- mgv7, flat and fractal with limitations.
 
--- Check for necessary mod functions and abort if they aren't available.
-if not minetest.get_biome_id then
-	minetest.log()
-	minetest.log("* Not loading MOD: Australia *")
-	minetest.log("MOD: Australia requires mod functions which are")
-	minetest.log(" not exposed by your Minetest build.")
-	minetest.log()
-	return
+if not minetest.get_translator then -- minetest.get_biome_id
+	error("[Mod australia] Your Minetest version is no longer supported. (version < 5.0.0)")
 end
 
 -- Definitions made by this mod that other mods can use too
-aus = {}
-aus.path = minetest.get_modpath("australia")
-aus.schematics = {}
+australia = {
+	S = minetest.get_translator("australia"),
+	MP = minetest.get_modpath("australia") .. "/",
+	schematics = {},
+	settings = {
+		-- mapgens
+		contents		= true,		-- kepp biomes, decorations and ores currently registered
+		decorations		= true,		-- decorations (mostly grasses) registered by each biome
+		ores			= true,		-- ores (mostly common ores) registered by each biome
+		-- nodes support
+		fence			= true,
+		fence_gate		= false,	-- optional doors mod needed
+		fence_rail		= false,
+		mese_post_light	= false,
+		stairs			= true,		-- optional stairs mod needed
+		stairsplus		= false,	-- optional moreblocks mod needed (only tree/wood supported)
+		technic_cnc		= false,	-- optional technic_cnc mod needed (only tree/wood supported)
+		-- compatibility
+		old_stairs		= false,	-- compatibility (aliases) with stairs registered on previous versions of this mod
+		old_stairsplus	= false,	-- rename (aliases) stair, outer, inner and slab of moreblocks mod - stairs setting needed
+		--
+		extra = true
+	}
+}
 
--- Set the following to 1 to enable biome or 0 to disable
-aus.biome_underground				= 1
-aus.biome_mangroves					= 1
-aus.biome_tasman_sea				= 1
-aus.biome_great_australian_bight	= 1
-aus.biome_indian_ocean				= 1
-aus.biome_great_barrier_reef		= 1
-aus.biome_timor_sea					= 1
-aus.biome_jarrah_karri_forests		= 1
-aus.biome_eastern_coasts			= 1
-aus.biome_goldfields_esperence		= 1
-aus.biome_arnhem_land				= 1
-aus.biome_gulf_of_carpentaria		= 1
-aus.biome_far_north_queensland		= 1
-aus.biome_pilbara					= 1
-aus.biome_kimberley					= 1
-aus.biome_tasmania					= 1
-aus.biome_great_dividing_range		= 1
-aus.biome_victorian_forests			= 1
-aus.biome_murray_darling_basin		= 1
-aus.biome_mulga_lands				= 1
-aus.biome_flinders_lofty			= 1
-aus.biome_central_australia			= 1
-aus.biome_simpson_desert			= 1
-aus.biome_australian_alps			= 1
+-- Read settings from configuration file
+for k, _ in pairs(australia.settings) do
+	local setting = minetest.settings:get_bool("australia_" .. k)
+	if setting ~= nil then
+		australia.settings[k] = setting
+	end
+end
+
+-- Set the following to true/false to enable/disable the corresponding biome
+	-- Underground biome
+australia.underground				= true
+	-- Coastal biomes
+australia.mangroves					= true
+australia.tasman_sea				= true
+australia.great_australian_bight	= true
+australia.indian_ocean				= true
+australia.great_barrier_reef		= true
+australia.timor_sea					= true
+	-- Lowland biomes
+australia.jarrah_karri_forests		= true
+australia.eastern_coasts			= true
+australia.goldfields_esperence		= true
+australia.arnhem_land				= true
+australia.gulf_of_carpentaria		= true
+australia.far_north_queensland		= true
+australia.pilbara					= true
+australia.kimberley					= true
+	-- Highland biomes
+australia.tasmania					= true
+australia.great_dividing_range		= true
+australia.victorian_forests			= true
+australia.flinders_lofty			= true
+australia.murray_darling_basin		= true
+australia.mulga_lands				= true
+australia.central_australia			= true
+australia.simpson_desert			= true
+	-- Alpine biome
+australia.australian_alps			= true
 
 -- Load files
-dofile(aus.path .. "/functions.lua")
-dofile(aus.path .. "/nodes.lua")
-dofile(aus.path .. "/noairblocks.lua")
-dofile(aus.path .. "/craftitems.lua")
-dofile(aus.path .. "/crafting.lua")
-dofile(aus.path .. "/trees.lua")
-dofile(aus.path .. "/mapgen.lua")
-dofile(aus.path .. "/saplings.lua")
---dofile(aus.path .. "/voxel.lua")
+dofile(australia.MP .. "crafting.lua")
+dofile(australia.MP .. "craftitems.lua")
+dofile(australia.MP .. "functions.lua")
+dofile(australia.MP .. "noairblocks.lua")
+dofile(australia.MP .. "mapgen.lua")
+dofile(australia.MP .. "nodes.lua")
+dofile(australia.MP .. "trees.lua")
+if minetest.global_exists("bonemeal") then
+	dofile(australia.MP .. "bonemeal.lua")
+end
+-- dofile(australia.MP .. "voxel.lua")
 
-minetest.log("MOD: Australia loaded")
+minetest.log("action", "[MOD] australia loaded")
